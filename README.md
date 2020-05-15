@@ -5,7 +5,7 @@
 
 ## 总体
 > `core`目录主要自动加载`controller`，`services`和`middlewares`等，所有的业务代码逻辑全部写在`src`目录下；
-> 分为相应的目录，主要的目录为`/controller`，`/middlewares`，`/models`和`/services`；
+> 分为相应的目录，主要的目录为`/controller`，`/middlewares`，`/models`和`/services`；实现一个基于koa2封装的mini版的webserver
 > 1. 主体思想是所有的`services`和`models` 都放在`ctx`上；
 > 2. 后端路由书写规则，根据`controller` js的文件目录定义路由路径；并且支持中间件各种粒度的控制
 > 3. 支持`全局中间件`，`分组中间件`与`某个url下中间件`。
@@ -52,3 +52,4 @@
 
 
  ## 路由控制使用的是`find-my-way`
+
