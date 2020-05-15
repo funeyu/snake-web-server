@@ -1,0 +1,14 @@
+.idea
+.vscode
+node_modules/
+.DS_Store
+*.log
+build
+didi-react-framework-logs.json
+analyze.html
+.cache/
+dist/
+output
+.history/
+mock/config/cookie.js
+.tmp*

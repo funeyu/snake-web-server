@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+option go_package = "proto";
+package search;
+
+message SearchRequest {
+  string word = 1;
+  int32 page = 2;
+  int32 sort = 3;
+}
+message Result {
+  string id = 1;
+  string title = 2;
+  string url = 3;
+  string favicon = 4;
+  bool isTop5 = 5;
+  int32 star = 6;
+  uint32 timeStamp = 7;
+  string description = 8;
+}
+
+message SearchResponse {
+  repeated Result data = 1;
+  repeated string keywords = 2;
+  bool success = 3;
+  uint32 total = 4;
+}
+
+message DetailRequest {
+  string id = 1;
+}
+
+message DetailResponse {
+  Result data = 1;
+}
+
+message DetailsRequest {
+  repeated string ids = 1;
+}
+
+message DetailsResponse {
+  repeated Result data = 1;
+}
+
+service Searcher {
+  rpc Search (SearchRequest) returns (SearchResponse) {};
+  rpc Details (DetailsRequest) returns (DetailsResponse) {};
+  rpc Detail (DetailRequest) returns (DetailResponse) {};
+}

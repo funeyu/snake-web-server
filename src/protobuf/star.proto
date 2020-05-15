@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+option go_package = "proto";
+package star;
+
+message StarRequest {
+    string word = 1;
+    int32 type = 2;
+    string docId = 3;
+}
+
+message StarResponse {
+    bool isSuccess = 1;
+}
+
+service Starer {
+    rpc Star (StarRequest) returns (StarResponse) {};
+}
