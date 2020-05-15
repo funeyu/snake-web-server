@@ -4,26 +4,37 @@
 现在先将server的前台放出去，后续会依次把ui层代码和索引层代码一并放出；
 
 ## 总体
-> 所有的`services`和`models` 都放在`ctx`上；后端路由书写规则，根据`controller` js的文件目录定义路由路径；并且支持中间件各种粒度的控制，支持`全局中间件`，`分组中间件`与`某个url下中间件`。
+> `core`目录主要自动加载`controller`，`services`和`middlewares`等，所有的业务代码逻辑全部写在`src`目录下；
+> 分为相应的目录，主要的目录为`/controller`，`/middlewares`，`/models`和`/services`；
+> 1. 主体思想是所有的`services`和`models` 都放在`ctx`上；
+> 2. 后端路由书写规则，根据`controller` js的文件目录定义路由路径；并且支持中间件各种粒度的控制
+> 3. 支持`全局中间件`，`分组中间件`与`某个url下中间件`。
 
 ## 开发
 > npm run dev
 
 ## controller
 > 接口path: 对应的`controller.js`js文件目录的地址;
-如接口：`/api/mis/app/delete` 对应的目录： `src/controllers/api/mis/app/`,即在该目录下有含有`/delete`路由规则的js
-这样写方便根据目录查找接口，并且能做好接口的整理
+如接口：`/api/snake/search/op/` 对应的目录： `src/controllers/api/snake/op/`,即在该目录下有含有`/`路由规则的`index.js`文件,当然该目录下也可以含有其他的js文件不一定非是`index.js`,只要是该目录下的js都会加载，并将其中的路由规则全部依据文件路径添加相应的路由前缀；
+这样写方便根据目录查找接口，并且能较好地做接口的整理；
 
 ``` javascript
-@router.post({url: '/delete', base: __dirname}, koaBody())
-  async delete(ctx) {
+ @router.post({url: '/', base: __dirname}, koaBody())
+  async operation(ctx, next) {
     try {
-      const { id } = ctx.request.body;
-      const res =  ctx.services.App.delete(id);
-      ctx.services.Response.ok('success');
-    } catch(error) {
-      console.log('error', error);
-      ctx.services.Response.error(10050, error);
+      const {word, type, docId} = ctx.request.body;
+      await ctx.services.Operation.create(docId, word, type);
+      if (type != 3) {
+        await ctx.services.GRPC.star(word, type, docId);
+      }
+      ctx.body = {
+        success: true
+      };
+    } catch(err) {
+      ctx.body = {
+        success: false,
+        msg: err.message
+      }
     }
   }
 ```
