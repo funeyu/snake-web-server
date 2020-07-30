@@ -21,7 +21,8 @@ function loadController() {
   const files = glob.sync(`${SrcControllerPath}/**/*.js`);
   files.forEach(file => {
     if (file.includes('middleware.js')) { // 分组的中间件
-      router.GroupMiddle(file, require(file));
+      const middlePath = file.replace('middleware.js', '');
+      router.GroupMiddle(middlePath, require(file));
     } else {
       let controller = require(file).default;
       if (typeof controller === "function") {

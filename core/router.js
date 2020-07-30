@@ -44,11 +44,20 @@ class Router {
     return `${basePath}${url}`;
   }
 
-  // 根据urlInfo 去加载'分组'的中间件；
-  getGroupMiddleware(urlInfo) {
-    const { base } = urlInfo
+  // 根据url 去加载'分组'的中间件；
+  getGroupMiddleware(url) {
+    const { middles } = url.split('/').reduce((pre, next)=> {
+      let path = pre.relativePath + next + '/'
+      let m = this.groupMiddlewares.get(path);
+      if (m) {
+        pre.middles.push(m);
+      }
+      pre.relativePath = path;
+      return pre;
+    }, {middles: [], relativePath: SrcControllerPath});
 
-    return this.groupMiddlewares.get(`${base}/middleware.js`);
+    console.log('url', url, middles);
+    return middles;
   }
 
   // target 即 descorate的controller
@@ -63,11 +72,11 @@ class Router {
 
     action = action.bind(target);
     this.routerWays.on("GET", this.url(urlInfo), async (ctx, next) => {
-      let groupMiddleware = this.getGroupMiddleware(urlInfo);
-      if (groupMiddleware || middleware) {
+      let groupMiddleware = this.getGroupMiddleware(this.url(urlInfo));
+      if (groupMiddleware.length > 0 || middleware) {
         const middlewareHandlers =[];
-        if (groupMiddleware) {
-          middlewareHandlers.push(groupMiddleware)
+        if (groupMiddleware.length > 0) {
+          middlewareHandlers.splice(0, 0, ...groupMiddleware)
         }
         if (typeof middleware === "function") {
           middlewareHandlers.push(middleware);
@@ -128,23 +137,27 @@ class Router {
     }
     action = action.bind(target);
     this.routerWays.on("POST", this.url(urlInfo), async (ctx, next) => {
-      if (middleware) {
-        let middlewareHandler;
+      let groupMiddleware = this.getGroupMiddleware(this.url(urlInfo));
+      if (groupMiddleware.length > 0 || middleware) {
+        const middlewareHandlers =[];
+        if (groupMiddleware.length > 0) {
+          middlewareHandlers.splice(0, 0, ...groupMiddleware)
+        }
         if (typeof middleware === "function") {
-          middlewareHandler = middleware;
+          middlewareHandlers.push(middleware);
         } else if (
           typeof middleware === "string" &&
           this.middlewares.get(middleware)
         ) {
-          middlewareHandler = this.middlewares.get(middleware)(...middleargs);
+          middlewareHandlers.push(this.middlewares.get(middleware)(...middleargs));
         }
-
-        if (middlewareHandler) {
-          let nextHandler = function(ctx) {
+        console.log('middlewares', middlewareHandlers);
+        if (middlewareHandlers && middlewareHandlers.length > 0) {
+          const composedMiddlewares = compose(middlewareHandlers);
+          const nextHandler = function(ctx) {
             return action(ctx, next);
           }.bind(null, ctx);
-
-          return middlewareHandler(ctx, nextHandler);
+          return composedMiddlewares(ctx, nextHandler);
         }
       } else {
         return action(ctx, next);
